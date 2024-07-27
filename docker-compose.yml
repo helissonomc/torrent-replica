@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  peer1:
+    build:
+      context: .
+    command: python peer.py host 5000
+    ports:
+      - 8001:5000
+
+  peer2:
+    build:
+      context: .
+    command: python peer.py connect 8001
+    ports:
+      - 8002:5000
+
+  peer3:
+    build:
+      context: .
+    command: python peer.py connect 8001
+    ports:
+      - 8003:5000
