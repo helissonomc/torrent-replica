@@ -22,19 +22,19 @@ class Peer:
             self._start_threads(self.client_socket)
 
     def connect_to_peer(self, port):
-        self.socket.connect(('peer1', port))
+        self.socket.connect(('192.168.16.1', port))
         print(f"Connected to 192.168.16.1:{port}")
 
         self._start_threads(self.socket)
 
     def _start_threads(self, connection):
-        print(f'Thread started {threading.current_thread()}')
         threading.Thread(target=self.receive_messages, args=(connection,)).start()
         threading.Thread(target=self.send_messages, args=(connection,)).start()
 
     def receive_messages(self, connection):
         while True:
             try:
+                print(f'Thread started AAAAA {threading.current_thread()}')
                 message = connection.recv(1024).decode("utf-8")
                 if message:
                     print(f"Peer: {message}")
@@ -48,6 +48,7 @@ class Peer:
     def send_messages(self, connection):
         while True:
             message = input()
+            print(f'Thread started BBBBB {threading.current_thread()}')
             connection.send(message.encode("utf-8"))
 
 
