@@ -1,6 +1,7 @@
 import socket
 import threading
 import sys
+import os
 
 
 class Peer:
@@ -22,7 +23,7 @@ class Peer:
             self._start_threads(self.client_socket)
 
     def connect_to_peer(self, port):
-        self.socket.connect(('192.168.16.1', port))
+        self.socket.connect(('192.168.16.1', port))  # Replace with actual peer IP
         print(f"Connected to 192.168.16.1:{port}")
 
         self._start_threads(self.socket)
@@ -34,27 +35,56 @@ class Peer:
     def receive_messages(self, connection):
         while True:
             try:
-                print(f'Thread started AAAAA {threading.current_thread()}')
                 message = connection.recv(1024).decode("utf-8")
                 if message:
-                    print(f"Peer: {message}")
+                    if message.startswith("FILE:"):
+                        print("Receiving file...")
+                        filename = message[5:]
+                        self.receive_file(connection, filename)
+                    else:
+                        print(f"Peer: {message}")
                 else:
                     print("Connection closed by the peer.")
                     break
-            except:
-                print("An error occurred.")
+            except Exception as e:
+                print(f"An error occurred: {e}")
                 break
 
     def send_messages(self, connection):
         while True:
             message = input()
-            print(f'Thread started BBBBB {threading.current_thread()}')
-            connection.send(message.encode("utf-8"))
+            if message.startswith("SEND_FILE:"):
+                filepath = message[10:]
+                if os.path.isfile(filepath):
+                    filename = os.path.basename(filepath)
+                    connection.send(f"FILE:{filename}".encode("utf-8"))
+                    self.send_file(connection, filepath)
+                else:
+                    print("File not found.")
+            else:
+                connection.send(message.encode("utf-8"))
+
+    def receive_file(self, connection, filename):
+        with open(f"received_{filename}", "wb") as f:
+            print('aqui')
+            data = connection.recv(1024)
+            print(data)
+
+            f.write(data)
+        print(f"File {filename} received.")
+
+    def send_file(self, connection, filepath):
+        with open(filepath, "rb") as f:
+            while True:
+                data = f.read(1024)
+                if not data:
+                    break
+                connection.send(data)
+        print(f"File {filepath} sent.")
 
 
 def main():
     if len(sys.argv) != 3:
-        print("Usage: python peer.py <host|connect> <port>")
         sys.exit(1)
 
     mode = sys.argv[1]
@@ -62,15 +92,12 @@ def main():
 
     host = "0.0.0.0"
     peer = Peer(host, 5000)
-    print(f"main thread {threading.current_thread()}")
     if mode == "host":
         peer.start_server()
     elif mode == "connect":
         peer.connect_to_peer(port)
     else:
-        print("Invalid choice. Please enter 'host' or 'connect'.")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()
