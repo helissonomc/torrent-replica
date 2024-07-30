@@ -23,7 +23,7 @@ class Peer:
             self._start_threads(self.client_socket)
 
     def connect_to_peer(self, port):
-        self.socket.connect(('192.168.16.1', port))  # Replace with actual peer IP
+        self.socket.connect(("192.168.16.1", port))  # Replace with actual peer IP
         print(f"Connected to 192.168.16.1:{port}")
 
         self._start_threads(self.socket)
@@ -66,7 +66,6 @@ class Peer:
 
     def receive_file(self, connection, filename):
         with open(f"received_{filename}", "wb") as f:
-            print('aqui')
             data = connection.recv(1024)
             print(data)
 
@@ -98,6 +97,7 @@ def main():
         peer.connect_to_peer(port)
     else:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
